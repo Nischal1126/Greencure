@@ -2,3 +2,13 @@ dataset/
 split_dataset/
 dataset.zip
 .lightning_studio/
+
+# IDE folders
+.idea/
+.vscode/
+.cursor-server
+.vscode-server
+.windsurf-server
+
+# Terminal history
+.lesshst
