@@ -1,5 +1,5 @@
 import os
-from src.Data import transform
+from src.data.transform import get_transform
 from torchvision import datasets
 from torch.utils.data import DataLoader
 
@@ -7,17 +7,17 @@ split_dir = "/teamspace/studios/this_studio/split_dataset"
 
 train_dataset = datasets.ImageFolder(  #loads images from a folder structure
     os.path.join(split_dir, "train"),
-    transform=transform.get_transform()
+    transform=get_transform()
 )
 
 test_dataset  = datasets.ImageFolder(
     os.path.join(split_dir, "test"),
-    transform=transform.get_transform()
+    transform=get_transform()
 )
 
 val_dataset   = datasets.ImageFolder(
     os.path.join(split_dir, "val"),
-    transform=transform.get_transform()
+    transform=get_transform()
 )
 
 
@@ -33,7 +33,7 @@ val_loader   = DataLoader(val_dataset,   batch_size=32,
                           shuffle=False, num_workers=4,
                           pin_memory=True)
 
-
+num_classes  = len(train_dataset.classes)
 
 if __name__ == '__main__':
     print(f"Classes  : {len(train_dataset.classes)}")
