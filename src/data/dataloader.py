@@ -1,5 +1,5 @@
 import os
-from src.data.transform import get_transform
+from src.data.transform import get_transform_training, get_transform_validation_and_testing
 from torchvision import datasets
 from torch.utils.data import DataLoader
 
@@ -7,17 +7,17 @@ split_dir = "/teamspace/studios/this_studio/split_dataset"
 
 train_dataset = datasets.ImageFolder(  #loads images from a folder structure
     os.path.join(split_dir, "train"),
-    transform=get_transform()
+    transform=get_transform_training()
 )
 
 test_dataset  = datasets.ImageFolder(
     os.path.join(split_dir, "test"),
-    transform=get_transform()
+    transform=get_transform_validation_and_testing()
 )
 
 val_dataset   = datasets.ImageFolder(
     os.path.join(split_dir, "val"),
-    transform=get_transform()
+    transform=get_transform_validation_and_testing()
 )
 
 

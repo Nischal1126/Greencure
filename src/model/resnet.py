@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
-from torchvision.models import ResNet101_Weights
+from torchvision.models import ResNet50_Weights
 from src.model.base_model import BaseModel 
 from src.data.dataloader import num_classes
 
@@ -9,8 +9,13 @@ class ResNetClassifier(BaseModel):
     def __init__(self, n_classes: int, pretrained: bool):
         super().__init__(n_classes)
         self.n_classes = n_classes
-        self.model = models.resnet101(weights=ResNet101_Weights.IMAGENET1K_V1 if pretrained else None)
-        self.model.fc = nn.Linear(self.model.fc.in_features, n_classes)
+        self.model = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
+        
+        self.model.fc = nn.Sequential(
+            nn.Dropout(p=0.4),
+            nn.Linear(self.model.fc.in_features, n_classes)
+        )
+
     
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

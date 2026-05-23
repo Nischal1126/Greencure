@@ -27,7 +27,7 @@ dataloaders = {
 trainer = Trainer(
     model       = model,
     dataloaders = dataloaders,
-    config      = CONFIG["training"]
+    config      = CONFIG["training"],
 )
 
 trainer.train()

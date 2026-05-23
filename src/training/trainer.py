@@ -1,14 +1,16 @@
 import os
 import torch
 from torch.optim import Adam
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 from src.training.loss    import get_loss_function
 from src.training.metrics import get_accuracy
 import logging
 import csv
+from configs.config import CONFIG
+
 
 logger = logging.getLogger(__name__)
-
+scheduler     = CONFIG["scheduler"]
 
 class Trainer:
     def __init__(self, model, dataloaders: dict, config: dict):
@@ -29,21 +31,41 @@ class Trainer:
             label_smoothing=config.get("label_smoothing", 0.1)
         )
 
-        self.optimizer = Adam(
-            self.model.parameters(),
-            lr           = config.get("lr", 1e-4),
+        head_params = [p for n, p in self.model.model.named_parameters() if n.startswith('fc')]
+        # Grab all parameters EXCEPT the final layer
+        backbone_params = [p for n, p in self.model.model.named_parameters() if not n.startswith('fc')]
+
+        self.optimizer = Adam([
+            {'params': backbone_params, 'lr': config.get("lr", 1e-4) * 0.1},
+            {'params': head_params,     'lr': config.get("lr", 1e-4)}
+            ],
             weight_decay = config.get("weight_decay", 1e-4)
         )
 
         self.best_val_acc = 0.0
         os.makedirs(self.save_dir, exist_ok=True)
 
-        self.scheduler = CosineAnnealingLR(
-            self.optimizer,
-            T_max=self.epochs
+        self.warmup_scheduler = LinearLR(
+            self.optimizer, 
+            start_factor=0.1, 
+            end_factor=1.0, 
+            total_iters=3
         )
 
-        self.patience = 10
+        self.main_scheduler = CosineAnnealingLR(
+            self.optimizer,
+            T_max=max(1, self.epochs - 3)
+        )
+
+        self.scheduler = SequentialLR(
+            self.optimizer, 
+            schedulers=[self.warmup_scheduler, self.main_scheduler], 
+            milestones=[3]
+        )
+
+
+
+        self.patience = scheduler["patience"]
         self.patience_counter = 0
 
         self.history = {
@@ -181,10 +203,10 @@ class Trainer:
 
             print(
                 f"Train → Loss: {train_metrics['loss']:.4f}"
-                f"Acc: {train_metrics['acc']:.2f}%\n"
+                f"  |Acc: {train_metrics['acc']:.2f}%\n"
                 f"Val   → Loss: {val_metrics['loss']:.4f}"
-                f"Acc: {val_metrics['acc']:.2f}%"
-                f"LR    → {current_lr:.6f}"
+                f"  |Acc: {val_metrics['acc']:.2f}%"
+                f"  |LR    → {current_lr:.6f}"
             )
 
             self.history["train_loss"].append(train_metrics["loss"])

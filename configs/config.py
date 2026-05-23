@@ -22,7 +22,7 @@ MODEL_CONFIG = {
 }
 
 TRAIN_CONFIG = {
-    "epochs"          : 50,
+    "epochs"          : 100,
     "lr"              : 1e-4,
     "weight_decay"    : 1e-4,
     "label_smoothing" : 0.1,
@@ -33,10 +33,9 @@ TRAIN_CONFIG = {
 
 SCHEDULER_CONFIG = {
     "name"      : "cosine",     # cosine, step, plateau
-    "T_max"     : 50,           # for cosine
     "step_size" : 10,           # for step scheduler
     "gamma"     : 0.1,          # for step scheduler
-    "patience"  : 5,            # for plateau scheduler
+    "patience"  : 10,            # for plateau scheduler
 }
 
 CONFIG = {
